@@ -1,348 +1,359 @@
 @echo off
-setlocal EnableDelayedExpansion
-title FamilyWealthPlanner – Deploy to GitHub + Vercel
+title FamilyWealthPlanner — Deploy to Cloud (Vercel)
 color 0B
 cls
 
 echo.
-echo  ============================================================
-echo    FamilyWealthPlanner — One-Click Deploy Wizard
-echo    Publishes your app FREE to the internet via Vercel
-echo  ============================================================
+echo  =====================================================
+echo    FamilyWealthPlanner — Cloud Deployment Wizard
+echo    Deploys your app FREE to Vercel (runs anywhere!)
+echo  =====================================================
 echo.
-echo  What this wizard does:
-echo    1. Checks your tools are installed
-echo    2. Builds the app
-echo    3. Uploads code to GitHub
-echo    4. Deploys live to Vercel
+echo  This wizard will:
+echo    1. Check your tools are installed
+echo    2. Build the app for production
+echo    3. Set up Git version control
+echo    4. Upload your code to GitHub
+echo    5. Deploy live to Vercel
 echo.
-echo  You need:  github.com account  +  vercel.com account
-echo  (Both are free. Sign in to Vercel with your GitHub account.)
+echo  You will need accounts on:
+echo    - github.com  (free)
+echo    - vercel.com  (free, sign in with GitHub)
 echo.
-echo  Press any key to start...
-pause >nul
+pause
 
-:: ============================================================
-:: STEP 1 — Check tools
-:: ============================================================
 cls
 echo.
-echo  [STEP 1 of 5]  Checking required tools...
+echo  ══════════════════════════════════════════
+echo   STEP 1 of 5 — Checking required tools
+echo  ══════════════════════════════════════════
 echo.
 
-:: Check Node.js
+:: ── Check Node.js ────────────────────────────────────────────────────────────
 where node >nul 2>&1
 if %errorlevel% neq 0 (
     color 0C
-    echo  !! Node.js is NOT installed.
+    echo  [!] Node.js not found.
     echo.
-    echo  Please install it:
-    echo    1. Your browser will open  https://nodejs.org
-    echo    2. Click the big green "LTS" button to download
-    echo    3. Run the installer – click Next through everything
-    echo    4. When done, CLOSE this window and open it again
+    echo  Please install Node.js first:
+    echo    1. Go to: https://nodejs.org
+    echo    2. Download the LTS version
+    echo    3. Run the installer (use all defaults)
+    echo    4. Close and re-open this window
     echo.
-    echo  Press any key to open nodejs.org now...
+    echo  Press any key to open nodejs.org...
     pause >nul
     start https://nodejs.org
     exit /b 1
 )
-for /f "tokens=*" %%v in ('node --version 2^>nul') do set NODE_VER=%%v
-echo  [OK] Node.js %NODE_VER%
+for /f "tokens=*" %%i in ('node --version') do set NODE_VER=%%i
+echo  [✓] Node.js %NODE_VER%
 
-:: Check Git
+:: ── Check Git ─────────────────────────────────────────────────────────────────
 where git >nul 2>&1
 if %errorlevel% neq 0 (
     color 0C
     echo.
-    echo  !! Git is NOT installed.
+    echo  [!] Git not found.
     echo.
-    echo  Please install it:
-    echo    1. Your browser will open  https://git-scm.com
-    echo    2. Click "Download for Windows"
-    echo    3. Run the installer – click Next through everything
-    echo       (Use all the default options)
-    echo    4. When done, CLOSE this window and open it again
+    echo  Please install Git:
+    echo    1. Go to: https://git-scm.com/download/win
+    echo    2. Download and run the installer
+    echo    3. Use ALL default options (just click Next)
+    echo    4. Close and re-open this window
     echo.
-    echo  Press any key to open git-scm.com now...
+    echo  Press any key to open git-scm.com...
     pause >nul
     start https://git-scm.com/download/win
     exit /b 1
 )
-for /f "tokens=*" %%v in ('git --version 2^>nul') do set GIT_VER=%%v
-echo  [OK] %GIT_VER%
+for /f "tokens=*" %%i in ('git --version') do set GIT_VER=%%i
+echo  [✓] %GIT_VER%
 
-:: Check / install Vercel CLI
+:: ── Check Vercel CLI ──────────────────────────────────────────────────────────
 where vercel >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo  [..] Installing Vercel command-line tool (one-time, takes ~30s)...
-    call npm install -g vercel --silent
+    echo  [~] Vercel CLI not found — installing it now...
+    echo      (This is a free tool, takes about 30 seconds)
+    echo.
+    call npm install -g vercel
     if %errorlevel% neq 0 (
         color 0C
-        echo  !! Could not install Vercel CLI.
-        echo     Make sure you are connected to the internet and try again.
+        echo  [!] Could not install Vercel CLI.
+        echo      Make sure you have internet access and try again.
         pause
         exit /b 1
     )
-    echo  [OK] Vercel CLI installed
+    echo  [✓] Vercel CLI installed!
 ) else (
-    for /f "tokens=*" %%v in ('vercel --version 2^>nul') do set VCLI_VER=%%v
-    echo  [OK] Vercel CLI %VCLI_VER%
+    for /f "tokens=*" %%i in ('vercel --version') do set VERCEL_VER=%%i
+    echo  [✓] Vercel CLI %VERCEL_VER%
 )
 
 echo.
-echo  All tools ready!  Press any key to continue...
-pause >nul
+echo  All tools ready!
+echo.
+pause
 
-:: ============================================================
-:: STEP 2 — Build the app
-:: ============================================================
 cls
 echo.
-echo  [STEP 2 of 5]  Building the app...
+echo  ══════════════════════════════════════════
+echo   STEP 2 of 5 — Building the app
+echo  ══════════════════════════════════════════
+echo.
+echo  Installing dependencies and creating an
+echo  optimised production build...
 echo.
 
-if not exist "package.json" (
+if not exist "node_modules\" (
+    echo  [~] Installing npm packages...
+    call npm install --silent
+    if %errorlevel% neq 0 (
+        color 0C
+        echo  [!] npm install failed. Check your internet connection.
+        pause
+        exit /b 1
+    )
+    echo  [✓] Packages installed
+)
+
+echo  [~] Building production bundle...
+call npm run build
+if %errorlevel% neq 0 (
     color 0C
-    echo  !! This window must be opened FROM INSIDE the FamilyWealthPlanner folder.
     echo.
-    echo  How to fix:
-    echo    1. Open the FamilyWealthPlanner folder in File Explorer
-    echo    2. Right-click DEPLOY.bat
-    echo    3. Click "Run as administrator"  (or just double-click it)
+    echo  [!] Build failed.
+    echo      This usually means there is a code error.
+    echo      Please make sure the app runs locally with START.bat first.
+    pause
+    exit /b 1
+)
+echo  [✓] Build successful! (files are in the /dist folder)
+echo.
+pause
+
+cls
+echo.
+echo  ══════════════════════════════════════════
+echo   STEP 3 of 5 — Setting up Git
+echo  ══════════════════════════════════════════
+echo.
+
+:: ── Configure git user if not already set ────────────────────────────────────
+for /f "tokens=*" %%i in ('git config --global user.email 2^>nul') do set GIT_EMAIL=%%i
+if "%GIT_EMAIL%"=="" (
+    echo  Git needs your name and email (used for version history only).
+    echo  These do NOT have to match your GitHub account exactly.
+    echo.
+    set /p GIT_NAME=  Enter your name (e.g. John Smith): 
+    set /p GIT_EMAIL=  Enter your email (e.g. john@email.com): 
+    git config --global user.name "%GIT_NAME%"
+    git config --global user.email "%GIT_EMAIL%"
+    echo.
+    echo  [✓] Git configured
+) else (
+    echo  [✓] Git already configured as: %GIT_EMAIL%
+)
+
+:: ── Initialise repo if needed ─────────────────────────────────────────────────
+if not exist ".git\" (
+    git init
+    echo  [✓] Git repository created
+) else (
+    echo  [✓] Git repository already exists
+)
+
+:: ── Create .gitignore if missing ──────────────────────────────────────────────
+if not exist ".gitignore" (
+    echo node_modules/ > .gitignore
+    echo dist/ >> .gitignore
+    echo .env >> .gitignore
+    echo .vercel >> .gitignore
+    echo  [✓] .gitignore created
+)
+
+:: ── Stage and commit all files ────────────────────────────────────────────────
+git add .
+git commit -m "FamilyWealthPlanner — ready to deploy" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo  [✓] No new changes to commit (already up to date)
+) else (
+    echo  [✓] Files committed to Git
+)
+
+echo.
+pause
+
+cls
+echo.
+echo  ══════════════════════════════════════════
+echo   STEP 4 of 5 — Connecting to GitHub
+echo  ══════════════════════════════════════════
+echo.
+echo  You need a FREE GitHub account to store your code.
+echo.
+echo  If you do NOT have one:
+echo    1. Press any key — your browser will open github.com
+echo    2. Click "Sign up" and create a free account
+echo    3. Come back here and press any key to continue
+echo.
+echo  If you already have a GitHub account, just press any key.
+echo.
+pause
+start https://github.com
+
+echo.
+echo  ──────────────────────────────────────────────────
+echo   Now create a new repository on GitHub:
+echo  ──────────────────────────────────────────────────
+echo.
+echo    1. Go to github.com (should be open in your browser)
+echo    2. Click the [+] button at the top right
+echo    3. Click "New repository"
+echo    4. Name it:  FamilyWealthPlanner
+echo    5. Leave it PUBLIC (required for free Vercel deploys)
+echo    6. Do NOT tick "Add README" or "Add .gitignore"
+echo    7. Click "Create repository"
+echo.
+echo    After creating it, GitHub will show a page with
+echo    commands. You will need the URL from that page.
+echo    It looks like:
+echo.
+echo      https://github.com/YOURNAME/FamilyWealthPlanner.git
+echo.
+echo  ──────────────────────────────────────────────────
+echo.
+set /p GITHUB_URL=  Paste your GitHub repository URL here and press Enter: 
+
+if "%GITHUB_URL%"=="" (
+    color 0C
+    echo  [!] No URL entered. Please run this script again.
+    pause
+    exit /b 1
+)
+
+:: ── Remove old remote if exists, add new one ─────────────────────────────────
+git remote remove origin >nul 2>&1
+git remote add origin %GITHUB_URL%
+
+echo.
+echo  [~] Uploading your code to GitHub...
+echo      (A browser window may open asking you to log in to GitHub)
+echo.
+
+git branch -M main
+git push -u origin main
+if %errorlevel% neq 0 (
+    color 0C
+    echo.
+    echo  [!] Upload to GitHub failed.
+    echo.
+    echo  Common fixes:
+    echo    - Make sure you are logged in to GitHub in your browser
+    echo    - Make sure the repository URL is correct
+    echo    - Try running this script again
     echo.
     pause
     exit /b 1
 )
 
-if not exist "node_modules\" (
-    echo  [..] Installing packages (first time only, ~1 minute)...
-    call npm install --silent
-    if %errorlevel% neq 0 (
-        color 0C
-        echo  !! npm install failed. Check your internet connection.
-        pause & exit /b 1
-    )
-)
-
-echo  [..] Creating production build...
-call npm run build
-if %errorlevel% neq 0 (
-    color 0C
-    echo  !! Build failed.
-    echo     Make sure the app works locally first (double-click START.bat).
-    pause & exit /b 1
-)
-echo  [OK] Build complete
-
 echo.
-pause >nul
+echo  [✓] Code uploaded to GitHub successfully!
+echo.
+pause
 
-:: ============================================================
-:: STEP 3 — Git setup
-:: ============================================================
 cls
 echo.
-echo  [STEP 3 of 5]  Setting up Git version control...
+echo  ══════════════════════════════════════════
+echo   STEP 5 of 5 — Deploying to Vercel
+echo  ══════════════════════════════════════════
 echo.
-
-:: Configure git user if not set
-for /f "tokens=*" %%e in ('git config --global user.email 2^>nul') do set GIT_EMAIL=%%e
-if "!GIT_EMAIL!"=="" (
-    echo  Git needs your name and email for version history.
-    echo  These just need to match your GitHub account.
-    echo.
-    set /p GIT_NAME=  Your full name (e.g. Jane Smith): 
-    set /p GIT_EMAIL=  Your email (e.g. jane@gmail.com): 
-    git config --global user.name "!GIT_NAME!"
-    git config --global user.email "!GIT_EMAIL!"
-    echo.
-    echo  [OK] Git identity saved
-) else (
-    echo  [OK] Git already configured as: !GIT_EMAIL!
-)
-
-:: Init repo
-if not exist ".git\" (
-    git init -b main >nul 2>&1
-    if %errorlevel% neq 0 git init >nul 2>&1
-    echo  [OK] Git repository created
-) else (
-    echo  [OK] Git repository already exists
-)
-
-:: Create .gitignore
-if not exist ".gitignore" (
-    (
-        echo node_modules/
-        echo dist/
-        echo .env
-        echo .vercel
-        echo *.bat.bak
-    ) > .gitignore
-    echo  [OK] .gitignore created
-)
-
-:: Commit everything
-git add . >nul 2>&1
-git commit -m "FamilyWealthPlanner deploy" >nul 2>&1
-echo  [OK] Files committed
-
+echo  Almost there! Vercel will now deploy your app live.
 echo.
-pause >nul
-
-:: ============================================================
-:: STEP 4 — GitHub
-:: ============================================================
-cls
+echo  IMPORTANT — When Vercel asks you questions, answer:
 echo.
-echo  [STEP 4 of 5]  Connecting to GitHub...
+echo    ? Set up and deploy "FamilyWealthPlanner"?
+echo      → Press Y then Enter
 echo.
-echo  ----------------------------------------------------------------
-echo   You need a NEW empty repository on GitHub.
-echo  ----------------------------------------------------------------
+echo    ? Which scope do you want to deploy to?
+echo      → Select your personal account, press Enter
 echo.
-echo   1. Press any key — github.com will open in your browser
-echo   2. Click the  [+]  icon (top right of GitHub)
-echo   3. Click  "New repository"
-echo   4. Name it:   FamilyWealthPlanner
-echo   5. Set it to  PUBLIC
-echo   6. Do NOT tick any checkboxes (no README, no .gitignore)
-echo   7. Click  "Create repository"
-echo   8. On the next page, copy the URL at the top.
-echo      It looks like:
+echo    ? Link to existing project?
+echo      → Press N then Enter  (it's a new project)
 echo.
-echo        https://github.com/YourName/FamilyWealthPlanner.git
+echo    ? What's your project name?
+echo      → Type:  familywealthplanner  then Enter
 echo.
-echo  ----------------------------------------------------------------
+echo    ? In which directory is your code located?
+echo      → Just press Enter  (leave as ./)
 echo.
-echo  Press any key to open GitHub now...
-pause >nul
-start https://github.com/new
-
+echo    ? Want to modify settings?
+echo      → Press N then Enter
 echo.
-echo  Paste your GitHub repository URL below and press Enter.
-echo  (It must end in .git)
-echo.
-set /p REPO_URL=  Repository URL: 
-
-if "!REPO_URL!"=="" (
-    color 0C
-    echo  !! No URL entered. Run the wizard again.
-    pause & exit /b 1
-)
-
-:: Set remote
-git remote remove origin >nul 2>&1
-git remote add origin !REPO_URL!
-
-echo.
-echo  [..] Uploading your code to GitHub...
-echo       (A browser login window may appear — sign in to GitHub)
-echo.
-
-git branch -M main >nul 2>&1
-git push -u origin main
-if %errorlevel% neq 0 (
-    color 0C
-    echo.
-    echo  !! Upload to GitHub failed.
-    echo.
-    echo  Most common fix:
-    echo    Your browser should have asked you to log in to GitHub.
-    echo    If you missed it, run this wizard again — it will retry.
-    echo.
-    echo  If it keeps failing:
-    echo    Go to  github.com  ^> Settings ^> Developer settings
-    echo    ^> Personal access tokens ^> Tokens (classic)
-    echo    ^> Generate new token  ^> tick "repo"  ^> Generate
-    echo    Copy the token and use it as your password when asked.
-    echo.
-    pause & exit /b 1
-)
-echo.
-echo  [OK] Code is now on GitHub!
-
-pause >nul
-
-:: ============================================================
-:: STEP 5 — Vercel deploy
-:: ============================================================
-cls
-echo.
-echo  [STEP 5 of 5]  Deploying to Vercel...
-echo.
-echo  ----------------------------------------------------------------
-echo   A browser window will open asking you to log in to Vercel.
-echo   Sign in with your GitHub account.
-echo  ----------------------------------------------------------------
-echo.
-echo  When Vercel asks questions in this window, answer:
-echo.
-echo    "Set up and deploy?" .......................  Y  then Enter
-echo    "Which scope?" ...........................  pick your account
-echo    "Link to existing project?" ..............  N  then Enter
-echo    "What is your project name?" .............  familywealthplanner
-echo    "In which directory is your code?" .......  just press Enter  (./)
-echo    "Want to override settings?" .............  N  then Enter
-echo.
-echo  It takes about 30-60 seconds, then shows a URL like:
+echo  Vercel will then deploy — takes about 30-60 seconds.
+echo  At the end it will show you a URL like:
 echo    https://familywealthplanner-abc123.vercel.app
 echo.
 echo  Press any key when ready...
 pause >nul
 
+echo.
 call vercel --prod
 
 if %errorlevel% neq 0 (
+    color 0C
     echo.
-    echo  !! Vercel deployment had an issue.
+    echo  [!] Vercel deployment failed.
     echo.
-    echo  Easy manual alternative:
-    echo    1. Go to  vercel.com  and sign in with GitHub
-    echo    2. Click  "Add New Project"
-    echo    3. Click  "Import"  next to FamilyWealthPlanner
-    echo    4. Click  "Deploy"  (leave all settings as-is)
+    echo  Try manually:
+    echo    1. Go to vercel.com
+    echo    2. Sign in with your GitHub account
+    echo    3. Click "Add New Project"
+    echo    4. Import your FamilyWealthPlanner repository
+    echo    5. Click Deploy
     echo.
-    start https://vercel.com/new
-    pause & exit /b 0
+    pause
+    exit /b 1
 )
 
-:: ============================================================
-:: SUCCESS
-:: ============================================================
 cls
 color 0A
 echo.
-echo  ============================================================
+echo  ╔═══════════════════════════════════════════════╗
+echo  ║                                               ║
+echo  ║   SUCCESS! Your app is live on the internet!  ║
+echo  ║                                               ║
+echo  ╚═══════════════════════════════════════════════╝
 echo.
-echo    Your app is LIVE on the internet!
+echo  Your app URL was shown above (ends in .vercel.app)
+echo  Bookmark it — it works from any computer, phone,
+echo  or tablet with a web browser!
 echo.
-echo    The URL was shown above (ends in .vercel.app)
-echo    Bookmark it — it works from any phone, tablet, or computer.
+echo  ─────────────────────────────────────────────────
+echo   IMPORTANT — About your saved data:
+echo  ─────────────────────────────────────────────────
 echo.
-echo  ============================================================
+echo  Your financial plan is saved in your browser only.
+echo  To use it on another computer:
 echo.
-echo  ---- Saving your financial data ----
+echo    1. Open the app on THIS computer
+echo    2. Go to the Scenarios tab
+echo    3. Click "Export JSON"  — saves your plan to a file
+echo    4. Open the app on the OTHER computer
+echo    5. Go to Scenarios tab
+echo    6. Click "Import JSON" — loads your plan
 echo.
-echo  Your plan is saved in THIS browser only.
-echo  To use it on another device:
+echo  ─────────────────────────────────────────────────
+echo   To update the app in future:
+echo  ─────────────────────────────────────────────────
 echo.
-echo    On this computer:
-echo      Dashboard ^> NavBar ^> "Save / Load" ^> "Download settings file"
-echo.
-echo    On the other device:
-echo      Open your Vercel URL ^> "Save / Load" ^> "Load settings file"
-echo.
-echo  ---- Updating the app later ----
-echo.
-echo  When you get a new version (new .zip from Claude):
-echo    1. Unzip into this same folder, replacing files
+echo  After you get a new version (new .zip file):
+echo    1. Unzip it, replacing the old folder
 echo    2. Double-click DEPLOY.bat again
-echo    3. It pushes the update — your URL stays the same
+echo    3. It will automatically push the update live
 echo.
-echo  ============================================================
+echo  ─────────────────────────────────────────────────
 echo.
 echo  Press any key to finish.
 pause >nul

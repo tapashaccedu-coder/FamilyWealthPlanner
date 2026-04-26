@@ -515,7 +515,7 @@ export default function Scenarios() {
   const p1Name = state.profile.person1.name || 'Person 1'
 
   return (
-    <div className="page-enter space-y-10 max-w-5xl">
+    <div className="page-enter space-y-10 w-full">
 
       {/* ── PAGE HEADER ── */}
       <div className="flex items-start justify-between gap-4">

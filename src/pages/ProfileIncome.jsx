@@ -639,7 +639,7 @@ export default function ProfileIncome() {
   const togglePerson2 = () => dispatch({ type: ACTIONS.TOGGLE_PERSON2 })
 
   return (
-    <div className="page-enter space-y-8 max-w-3xl">
+    <div className="page-enter space-y-8 max-w-4xl">
       {/* Page header */}
       <div>
         <p className="text-xs font-medium text-gold-500 uppercase tracking-widest mb-1">Setup</p>

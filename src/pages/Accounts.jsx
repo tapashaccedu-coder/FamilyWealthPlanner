@@ -499,7 +499,7 @@ export default function Accounts() {
   }
 
   return (
-    <div className="page-enter space-y-8 max-w-3xl">
+    <div className="page-enter space-y-8 max-w-4xl">
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>

@@ -70,7 +70,7 @@ export default function NavBar() {
 
   return (
     <header className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="w-full px-6">
         <div className="flex items-center gap-8">
           {/* Logo */}
           <div className="flex items-center gap-2.5 py-3 shrink-0">
